@@ -2,6 +2,8 @@
 # {
 #    "type"
 # }
+import typing
+from typing import _GenericAlias, List
 
 def opt(json, key, func, default=None):
     if key in json:
@@ -12,36 +14,48 @@ class JsonSpec(object):
     def parse(self, json):
         for attr in self.__dict__:
             attr_value = getattr(self, attr)
-            if type(attr_value) == type(int):
+            if type(attr_value) == type:
                 setattr(self, attr, attr_value(json[attr]))
+            elif type(attr_value) == _GenericAlias: # assume it's a list for now
+                element_constructor = typing.get_args(attr_value)[0]
+                array = [element_constructor(e) for e in json.get(attr, [])]
+    def __str__(self):
+        return str(self.__dict__)
+    def __repr__(self):
+        return str(self.__dict__)
 
 class DeckConstraintInfo(JsonSpec):
     def __init__(self, json):
         self.minDeckSize = int
         self.maxDeckSize = int
         self.maxSideboardSize = int
+
         self.parse(json)
 
-class Team(object):
+class Team(JsonSpec):
     def __init__(self, json):
-        self.id = int(json["id"])
-        self.playerIds = [int(id) for id in json["playerIds"]]
+        self.id = int
+        self.playerIds = List[int]
 
-class GameInfo(object):
+        self.parse(json)
+
+class GameInfo(JsonSpec):
     def __init__(self, json):
-        self.matchID = str(json["matchID"])
-        self.gameNumber = int(json["gameNumber"])
-        self.stage = str(json["stage"])
-        self.type = str(json["type"])
-        self.variant = str(json["variant"])
-        self.matchState = str(json["matchState"])
-        self.matchWinCondition = str(json["matchWinCondition"])
-        self.maxTimeoutCount = int(json["maxTimeoutCount"])
-        self.maxPipCount = int(json["maxPipCount"])
-        self.timeoutDurationSec = int(json["timeoutDurationSec"])
-        self.superFormat = str(json["superFormat"])
-        self.mulliganType =  str(json["mulliganType"])
-        self.deckConstraintInfo = DeckConstraintInfo(json["deckConstraintInfo"])
+        self.matchID = str
+        self.gameNumber = int
+        self.stage = str
+        self.type = str
+        self.variant = str
+        self.matchState = str
+        self.matchWinCondition = str
+        self.maxTimeoutCount = int
+        self.maxPipCount = int
+        self.timeoutDurationSec = int
+        self.superFormat = str
+        self.mulliganType =  str
+        self.deckConstraintInfo = DeckConstraintInfo
+
+        self.parse(json)
 
 class GameObject(object):
     def __init__(self, json):
