@@ -8,11 +8,19 @@ def opt(json, key, func, default=None):
         return func(key)
     return default
 
-class DeckConstraintInfo(object):
+class JsonSpec(object):
+    def parse(self, json):
+        for attr in self.__dict__:
+            attr_value = getattr(self, attr)
+            if type(attr_value) == type(int):
+                setattr(self, attr, attr_value(json[attr]))
+
+class DeckConstraintInfo(JsonSpec):
     def __init__(self, json):
-        self.minDeckSize = int(json["minDeckSize"])
-        self.maxDeckSize = int(json["maxDeckSize"])
-        self.maxSideboardSize = int(json["maxSideboardSize"])
+        self.minDeckSize = int
+        self.maxDeckSize = int
+        self.maxSideboardSize = int
+        self.parse(json)
 
 class Team(object):
     def __init__(self, json):
