@@ -53,6 +53,9 @@ class MTGALog(object):
     def __repr__(self):
         return repr(self.logs)
     
+    def __len__(self):
+        return len(self.logs)
+    
     def __str__(self):
         return str(self.logs)
 
@@ -109,10 +112,10 @@ def parse_game_message(message_type, header, body):
         "rest":rest
     }
 
-def parse_log():
+def parse_log(path=os.path.join(MTGA_PATH, "Player.log")):
     state = {"state": {"header": None, "log_type": None, "body":""}, "acc":[]}
     state_sets = set()
-    with open(os.path.join(MTGA_PATH,"Player.log"), encoding="utf8") as playerlog:
+    with open(path, encoding="utf8") as playerlog:
         for line in playerlog.readlines():
             state = parse_log_line(state, line)
     parsed_logs = []

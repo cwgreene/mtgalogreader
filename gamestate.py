@@ -2,6 +2,12 @@
 # {
 #    "type"
 # }
+
+def opt(json, key, func, default=None):
+    if key in json:
+        return func(key)
+    return default
+
 class DeckConstraintInfo(object):
     def __init__(self, json):
         self.minDeckSize = int(json["minDeckSize"])
@@ -38,15 +44,15 @@ class GameObject(object):
         self.visibility = str(json["visibility"])
         self.ownerSeatId = str(json["ownerSeatId"])
         self.controllerSeatId = str(json["controllerSeatId"])
-        self.cardTypes = [str(type) for type in json["cardTypes"]]
-        self.subtypes = [str(type) for type in json["subtypes"]]
-        self.color = [str(type) for type in json["color"]]
-        self.power = json["power"]
-        self.toughness = json["toughness"]
-        self.viewers = [int(viewer) for viewer in json["viewers"]]
-        self.name = int(json["name"])
+        self.cardTypes = [str(type) for type in json.get("cardTypes", [])]
+        self.subtypes = [str(type) for type in json.get("subtypes", [])]
+        self.color = [str(type) for type in json.get("color", [])]
+        self.power = json.get("power", None)
+        self.toughness = json.get("toughness", None)
+        self.viewers = [int(viewer) for viewer in json.get("viewers", [])]
+        self.name = int(json["name"]) if "name" in json else None
         self.ability = [int(ability) for ability in json.get("abilities", [])]
-        self.overlayGrpId = int(json["overlayGrpId"])
+        self.overlayGrpId = opt(json, 'overlayGrpId', lambda k: json[k])
 
 class Zone(object):
     def __init__(self, json):
@@ -71,12 +77,19 @@ class Player(object):
 
 class TurnInfo(object):
     def __init__(self, json):
-        self.decisionPlayer = int(json["decisionPlayer"])
+        self.decisionPlayer = opt(json, "decisionPlayer", lambda k: int(json[k]))
+        self.phase = opt(json, "phase", lambda k: str(json[k]))
+        self.step = opt(json, "step", lambda k: str(json[k]))
+        self.turnNumber = opt(json, "turnNumber", lambda k: int(json[k]))
+        self.activePlayer = opt(json, "activePlayer", lambda k: int(json[k]))
+        self.priorityPlayer = opt(json, "priorityPlayer", lambda k: int(json[k]))
+        self.nextPhase = opt(json, "nextPhase", lambda k: str(json[k]))
+        self.nextStep = opt(json, "nextStep", lambda k: str(json[k]))
 
 class Annotation(object):
     def __init__(self, json):
         self.id = int(json["id"])
-        self.affectorId = int(json["affectorId"])
+        self.affectorId = int(json["affectorId"]) if "affectorId" in json else None
         self.affectedIds = [int(id) for id in json.get("affectedIds", [])]
         self.type = [str(type) for type in json["type"]]
 
@@ -86,23 +99,23 @@ class Timer(object):
         self.type = str(json["type"])
         self.durationSec = int(json["durationSec"])
         self.behavior = str(json["behavior"])
-        self.warningThresholdSec = str(json["warningThresholdSec"])
+        self.warningThresholdSec = str(json["warningThresholdSec"]) if "warningThresholdSec" in json else None
 
 class GameStateMessage(object):
     def __init__(self, json):
-        self.gameStateType = json["type"]
+        self.type = str(json["type"])
         self.gamesStateId = int(json["gameStateId"])
-        self.gameInfo = GameInfo(json["gameInfo"])
-        self.teams = [Team(team) for team in json["teams"]]
-        self.players = [Player(player) for player in json["players"]]
-        self.turnInfo = TurnInfo(json["turnInfo"])
-        self.zones = [Zone(zone) for zone in json["zones"]]
+        self.gameInfo = GameInfo(json["gameInfo"]) if "gameInfo" in json else None
+        self.teams = [Team(team) for team in json.get("teams", [])]
+        self.players = [Player(player) for player in json.get("players", [])]
+        self.turnInfo = TurnInfo(json["turnInfo"]) if "turnInfo" in json else None
+        self.zones = [Zone(zone) for zone in json.get("zones", [])]
         self.gameObjects = [GameObject(gameObject) for gameObject in json.get("gameObjects", [])]
         self.annotations = [Annotation(annotation) for annotation in json.get("annotations", [])]
-        self.diffDeletedInstanceIds = [diff for diff in json["diffDeletedInstanceIds"]]
+        self.diffDeletedInstanceIds = [diff for diff in json.get("diffDeletedInstanceIds", [])]
         self.pendingMessageCount = int(json.get("pendingMessageCount",0))
         self.prevGameStateId = int(json["prevGameStateId"]) if "prevGameStateId" in json else None
-        self.timers = [Timer(timer) for timer in json["timers"]]
+        self.timers = [Timer(timer) for timer in json.get("timers", [])]
         self.update = str(json["update"])
         self.actions = [action for action in json.get("actions", [])]
 
