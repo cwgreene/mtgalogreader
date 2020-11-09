@@ -156,6 +156,28 @@ class Timer(JsonSpec):
 
         self.parse(json)
 
+class MonoManaCost(JsonSpec):
+    def __init__(self, json):
+        self.color = List[str]
+        self.count = int
+
+        self.parse(json)
+
+class Action(JsonSpec):
+    def __init__(self, json):
+        self.actionType = str
+        self.instanceId = Optional(int)
+        self.manaCost = List[MonoManaCost]
+
+        self.parse(json)
+
+class ActionSeat(JsonSpec):
+    def __init__(self, json):
+        self.seatId = int
+        self.action = Action
+        
+        self.parse(json)
+
 class GameStateMessage(JsonSpec):
     def __init__(self, json):
         self.type = str
@@ -172,7 +194,7 @@ class GameStateMessage(JsonSpec):
         self.prevGameStateId = Optional(int)
         self.timers = List[Timer]
         self.update = str
-        self.actions = List[dict]
+        self.actions = List[ActionSeat]
 
         self.parse(json)
 
