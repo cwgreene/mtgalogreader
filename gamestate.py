@@ -112,7 +112,7 @@ class Zone(JsonSpec):
     
 class Player(JsonSpec):
     def __init__(self, json):
-        self.lifeTotal = int
+        self.lifeTotal = Optional(int)
         self.systemSeatNumber = int
         self.maxHandSize = int
         self.teamId = int
@@ -180,21 +180,21 @@ class ActionSeat(JsonSpec):
 
 class GameStateMessage(JsonSpec):
     def __init__(self, json):
-        self.type = str
-        self.gameStateId = int
+        self.type = str # type: str
+        self.gameStateId = int # type: int
         self.gameInfo = Optional(GameInfo)
-        self.teams = List[Team]
-        self.players = List[Player]
+        self.teams = List[Team] # type: List[Team]
+        self.players = List[Player] # type: List[Player]
         self.turnInfo = Optional(TurnInfo)
-        self.zones = List[Zone]
-        self.gameObjects = List[GameObject]
-        self.annotations = List[Annotation]
-        self.diffDeletedInstanceIds = List[int]
-        self.pendingMessageCount = Optional(int, 0)
-        self.prevGameStateId = Optional(int)
-        self.timers = List[Timer]
-        self.update = str
-        self.actions = List[ActionSeat]
+        self.zones = List[Zone] # type: List[Zone]
+        self.gameObjects = List[GameObject] # type: List[GameObject]
+        self.annotations = List[Annotation] # type: List[Annotation]
+        self.diffDeletedInstanceIds = List[int] # type: List[int]
+        self.pendingMessageCount = Optional(int, 0) # type: int
+        self.prevGameStateId = Optional(int) # type: int
+        self.timers = List[Timer] # type: List[Timer]
+        self.update = str # type: str
+        self.actions = List[ActionSeat] # type: List[ActionSeat]
 
         self.parse(json)
 
