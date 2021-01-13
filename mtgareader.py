@@ -61,6 +61,28 @@ class MTGALog(object):
 
     def __getitem__(self, key):
         return self.logs[key]
+    
+    def games(self):
+        games = []
+        curGame = None
+        for log in self.logs:
+            if log["subtype"] == 'MatchGameRoomStateChangedEvent':
+                js = json.loads(log["json"])
+                gameRoomInfo = js["matchGameRoomStateChangedEvent"]["gameRoomInfo"]
+                if gameRoomInfo["stateType"] == "MatchGameRoomStateType_Playing":
+                    curGame = {
+                            "matchId": gameRoomInfo["gameRoomConfig"]["matchId"],
+                            "reservedPlayers": gameRoomInfo["gameRoomConfig"]["reservedPlayers"],
+                            "states": []
+                        }
+                if gameRoomInfo["stateType"] == "MatchGameRoomStateType_MatchCompleted":
+                    games.append(curGame)
+                    curGame = None
+            if log["subtype"] == 'GreToClientEvent':
+                if curGame and log["json"]:
+                    curGame["states"].append(json.loads(log["json"]))
+        return games
+
 
 def trans_parse(state, line, log_type):
     # add copy of header, log_type, body to accumulator

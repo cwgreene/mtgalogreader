@@ -16,11 +16,14 @@ def setup_index():
 
 index = setup_index()
 mtga = mtgareader.parse_log()
+for log in mtga.logs:
+    print(log["subtype"])
+print(mtga.games())
 cards_db = mtga.filter(subtype="PlayerInventory.GetPlayerCardsV3")[-1]["json"]
-
+"""
 for card_id in cards_db:
     if int(card_id) in index:
         card = index[int(card_id)]
         print(card["name"], cards_db[card_id])
     else:
-        raise(Exception("Could not find {}".format(card_id)))
+        raise(Exception("Could not find {}".format(card_id)))"""
