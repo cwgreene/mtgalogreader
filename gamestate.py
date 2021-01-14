@@ -144,6 +144,7 @@ class Annotation(JsonSpec):
         self.affectorId = Optional(int)
         self.affectedIds = List[int]
         self.type = List[str]
+        self.details = List[dict]
 
         self.parse(json)
 
