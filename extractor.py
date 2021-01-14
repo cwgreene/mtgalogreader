@@ -13,6 +13,16 @@ def setup_index():
     for card in cards:
         if "arena_id" in card:
             mtga_index[card["arena_id"]] = card
+    for card in cards:
+        if "arena_id" not in card:
+            continue
+        if "card_faces" not in card:
+            continue
+        # HACK: Cant' seem to find any way to determine if the
+        # card is double faced or not. Smitten Sword Master, for example
+        # doesn't apply here, as it only has one side, and only one Arena Id.
+        if card["arena_id"] + 1 not in mtga_index:
+            mtga_index[card["arena_id"]+1] = card
     return mtga_index
 
 index = setup_index()
