@@ -2,6 +2,8 @@ import os
 import json
 import re
 
+import gamestate
+
 MTGA_PATH = os.path.join(os.path.expanduser("~"),"AppData","LocalLow","Wizards of the Coast","MTGA")
 
 # REGEXS
@@ -67,7 +69,7 @@ class MTGALog(object):
         curGame = None
         for log in self.logs:
             if log["subtype"] == 'MatchGameRoomStateChangedEvent':
-                js = json.loads(log["json"])
+                js = log["json"]
                 gameRoomInfo = js["matchGameRoomStateChangedEvent"]["gameRoomInfo"]
                 if gameRoomInfo["stateType"] == "MatchGameRoomStateType_Playing":
                     curGame = {
@@ -80,7 +82,7 @@ class MTGALog(object):
                     curGame = None
             if log["subtype"] == 'GreToClientEvent':
                 if curGame and log["json"]:
-                    curGame["states"].append(json.loads(log["json"]))
+                    curGame["states"].append(log["json"])
         return games
 
 
@@ -122,8 +124,16 @@ def parse_game_message(message_type, header, body):
             raise('Failure')
     elif message_type in SINGLE_LINE_JSON:
         lines = body.split("\n")
-        js = lines[0]
+        js = json.loads(lines[0]) if lines[0] else None
         rest = "\n".join(lines[1:])
+        try:
+            if js and "greToClientEvent" in js and js["greToClientEvent"]:
+                for clientMessage in js["greToClientEvent"]["greToClientMessages"]:
+                    if clientMessage["type"] == "GREMessageType_GameStateMessage":
+                        clientMessage["gameStateMessage"] = gamestate.GameState(clientMessage["gameStateMessage"])
+        except Exception as e:
+            print(js)
+            raise(e)
     else:
         print(body)
         raise(Exception("Can't handle message type {} [{}]: {}".format(message_type, header, body)))
