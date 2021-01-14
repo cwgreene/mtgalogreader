@@ -90,6 +90,7 @@ class GameObject(JsonSpec):
         self.cardTypes = List[str]
         self.subtypes = List[str]
         self.color = List[str]
+        self.objectSourceGrpId = Optional(int)
         self.power = Optional(dict)
         self.toughness = Optional(dict)
         self.viewers = List[int]

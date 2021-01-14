@@ -1,6 +1,7 @@
 import mtgareader
 import os
 import json
+import mtgagame
 
 def setup_index():
     if not os.path.exists("cards.json"):
@@ -16,14 +17,11 @@ def setup_index():
 
 index = setup_index()
 mtga = mtgareader.parse_log()
-for log in mtga.logs:
-    print(log["subtype"])
-print(mtga.games())
-cards_db = mtga.filter(subtype="PlayerInventory.GetPlayerCardsV3")[-1]["json"]
-"""
-for card_id in cards_db:
-    if int(card_id) in index:
-        card = index[int(card_id)]
-        print(card["name"], cards_db[card_id])
-    else:
-        raise(Exception("Could not find {}".format(card_id)))"""
+
+game = mtga.games(index)[0]
+
+i = 0
+while game.next_state() is not None:
+    print("\nState", i)
+    game.show_state()
+    i+=1

@@ -2,6 +2,7 @@ import os
 import json
 import re
 
+import mtgagame
 import gamestate
 
 MTGA_PATH = os.path.join(os.path.expanduser("~"),"AppData","LocalLow","Wizards of the Coast","MTGA")
@@ -64,7 +65,7 @@ class MTGALog(object):
     def __getitem__(self, key):
         return self.logs[key]
     
-    def games(self):
+    def games(self, cards):
         games = []
         curGame = None
         for log in self.logs:
@@ -81,9 +82,13 @@ class MTGALog(object):
                     games.append(curGame)
                     curGame = None
             if log["subtype"] == 'GreToClientEvent':
-                if curGame and log["json"]:
-                    curGame["states"].append(log["json"])
-        return games
+                js = log["json"]
+                if not curGame or not js:
+                    continue
+                for clientMessage in js["greToClientEvent"]["greToClientMessages"]:
+                    if clientMessage["type"] == "GREMessageType_GameStateMessage":
+                        curGame["states"].append(clientMessage["gameStateMessage"])
+        return [mtgagame.MTGAGame(game["states"], cards) for game in games]
 
 
 def trans_parse(state, line, log_type):
@@ -130,7 +135,7 @@ def parse_game_message(message_type, header, body):
             if js and "greToClientEvent" in js and js["greToClientEvent"]:
                 for clientMessage in js["greToClientEvent"]["greToClientMessages"]:
                     if clientMessage["type"] == "GREMessageType_GameStateMessage":
-                        clientMessage["gameStateMessage"] = gamestate.GameState(clientMessage["gameStateMessage"])
+                        clientMessage["gameStateMessage"] = gamestate.GameStateMessage(clientMessage["gameStateMessage"])
         except Exception as e:
             print(js)
             raise(e)
